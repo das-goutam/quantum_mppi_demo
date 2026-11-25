@@ -1,0 +1,8 @@
+numpy
+matplotlib
+qiskit>=1.2
+qiskit-aer>=0.15
+pylatexenc
+pytest
+# optional, only to run tutorial.ipynb yourself (it is stored with its outputs):
+# jupyter

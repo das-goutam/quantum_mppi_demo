@@ -1,0 +1,37 @@
+finished classical sampling           (4 s)
+finished quantum, ideal device        (10 s)
+finished quantum, gate error 0.001    (322 s)
+finished quantum, gate error 0.005    (633 s)
+finished adaptive, ideal device       (639 s)
+finished adaptive, gate error 0.001   (757 s)
+
+Episodes with a constraint violation, in percent (300 episodes per entry)
+rollouts per control step          6       9      12      18      24
+classical sampling              12.3     4.3     3.3     0.3     0.0
+quantum, ideal device            0.0     0.0     0.0     0.0     0.0
+quantum, gate error 0.001        0.3     0.0     0.0     0.0     0.0
+quantum, gate error 0.005        7.0     2.0     0.7     0.3     0.0
+adaptive, ideal device           1.3     0.0     0.0     0.0     0.0
+adaptive, gate error 0.001       3.3     0.0     0.0     0.0     0.0
+
+Control steps without any verified sample, in percent
+rollouts per control step          6       9      12      18      24
+classical sampling              22.6    13.0     8.0     3.5     1.9
+quantum, ideal device           14.5    12.1    10.3     9.1     8.0
+quantum, gate error 0.001       14.1     9.9     7.9     5.6     4.0
+quantum, gate error 0.005       25.4    13.6     7.7     2.5     0.7
+adaptive, ideal device           6.2     2.4     1.1     0.5     0.4
+adaptive, gate error 0.001      10.0     3.1     1.3     0.5     0.1
+
+Mean cost of the episodes without violation (the exact update gives 10.5)
+rollouts per control step          6       9      12      18      24
+classical sampling             13.63   13.05   12.26   11.60   11.40
+quantum, ideal device          13.90   13.25   12.91   12.56   12.48
+quantum, gate error 0.001      14.19   13.49   13.06   12.54   12.34
+quantum, gate error 0.005      14.99   14.33   13.92   12.96   12.26
+adaptive, ideal device         13.92   12.45   12.03   11.62   11.44
+adaptive, gate error 0.001     13.72   12.89   12.05   11.45   11.26
+
+498000 circuit shots were simulated gate by gate.
+Saved results/benchmark.json
+Saved figures/benchmark.png

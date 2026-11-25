@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "quantum-mppi-demo: MPPI control with a simulated quantum sampler"
+authors:
+  - family-names: Das
+    given-names: Goutam
+  - family-names: Tanaka
+    given-names: Takashi
+preferred-citation:
+  type: article
+  title: "Model Predictive Path Integral Control as a Quantum Query Problem"
+  authors:
+    - family-names: Das
+      given-names: Goutam
+    - family-names: Tanaka
+      given-names: Takashi
+  journal: "IEEE Control Systems Letters"
+  year: 2026
+  identifiers:
+    - type: other
+      value: "arXiv:2607.28851"

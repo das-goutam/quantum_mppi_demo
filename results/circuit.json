@@ -1,0 +1,23 @@
+{
+  "x": 2,
+  "t": 0,
+  "qubits": 12,
+  "feasible_plans": 5,
+  "rollout_gates": {
+    "x": 17,
+    "ccx": 10,
+    "cx": 5
+  },
+  "logical_gates": {
+    "x": 55,
+    "ccx": 20,
+    "h": 19,
+    "cx": 10,
+    "measure": 5,
+    "barrier": 2,
+    "mcx": 2
+  },
+  "compiled_cnot": 160,
+  "compiled_single_qubit": 222,
+  "compiled_depth": 265
+}

@@ -1,0 +1,73 @@
+{
+  "x": 2,
+  "t": 0,
+  "feasible_plans": 5,
+  "plans": 32,
+  "p": 0.15625,
+  "nu_exact": 0.21660846237582604,
+  "acceptance_theory": [
+    0.15625000000000003,
+    0.88134765625,
+    0.8020401000976564
+  ],
+  "acceptance_statevector": [
+    0.1562499999999999,
+    0.8813476562499867,
+    0.8020401000976326
+  ],
+  "shots": 2000,
+  "devices": {
+    "ideal device": {
+      "accepted": 0.877,
+      "counts_on_feasible": [
+        349,
+        367,
+        331,
+        363,
+        344
+      ]
+    },
+    "gate error 0.001": {
+      "accepted": 0.758,
+      "counts_on_feasible": [
+        290,
+        311,
+        323,
+        315,
+        277
+      ]
+    },
+    "gate error 0.005": {
+      "accepted": 0.4685,
+      "counts_on_feasible": [
+        182,
+        197,
+        202,
+        183,
+        173
+      ]
+    }
+  },
+  "update": {
+    "budget": 12,
+    "repetitions": 500,
+    "samplers": {
+      "classical": {
+        "no_feasible_sample": 0.134,
+        "mean_abs_error": 0.7584722443930441
+      },
+      "quantum, depth 1, ideal": {
+        "no_feasible_sample": 0.0,
+        "mean_abs_error": 0.6279667308509638
+      },
+      "quantum, depth 1, eta = 0.001": {
+        "no_feasible_sample": 0.002,
+        "mean_abs_error": 0.6440193608310549
+      },
+      "quantum, depth 1, eta = 0.005": {
+        "no_feasible_sample": 0.074,
+        "mean_abs_error": 0.7680150460472159
+      }
+    }
+  }
+}

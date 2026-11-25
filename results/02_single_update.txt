@@ -1,0 +1,32 @@
+Problem: x = 2, t = 0, 5 feasible plans of 32, p = 0.1562
+Exact MPPI update (by enumeration): nu = +0.2166
+
+Amplitude of a plan after each stage of the circuit
+  stage                     feasible plan   infeasible plan   P(feasible)
+  superposition             +0.1768         +0.1768           0.1562
+  after marking             -0.1768         +0.1768           0.1562
+  after reflection          +0.4198         +0.0663           0.8813
+
+Probability that a shot returns a feasible plan
+  depth   theory sin^2((2k+1) theta)   statevector of the circuit
+  0       0.156250                     0.156250
+  1       0.881348                     0.881348
+  2       0.802040                     0.802040
+
+2000 shots at depth 1, each one verified by a classical rollout
+  device              accepted   counts on the 5 feasible plans (uniform is expected)
+  ideal device        0.877      [349, 367, 331, 363, 344]
+  gate error 0.001    0.758      [290, 311, 323, 315, 277]
+  gate error 0.005    0.469      [182, 197, 202, 183, 173]
+
+MPPI update with a budget of 12 rollout evaluations, 500 repetitions
+  sampler                          no feasible sample   mean |nu_hat - nu|
+  classical                         13.4 %              0.758
+  quantum, depth 1, ideal            0.0 %              0.628
+  quantum, depth 1, eta = 0.001      0.2 %              0.644
+  quantum, depth 1, eta = 0.005      7.4 %              0.768
+
+A classical sample costs 1 rollout. A depth-1 shot costs 3, so the quantum samplers
+use 4 shots where the classical sampler uses 12 samples.
+
+Saved results/single_update.json, figures/amplification.png and figures/shots.png

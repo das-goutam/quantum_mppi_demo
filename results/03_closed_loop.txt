@@ -1,0 +1,45 @@
+
+=== classical sampler (classical), budget 24 rollouts per step ===
+t= 0  x=2  p=0.156  proposed=24  accepted= 1  nu_hat=+1.000  nu_exact=+0.217  move=+1  (sampled)
+t= 1  x=3  p=0.250  proposed=24  accepted= 4  nu_hat=+0.201  nu_exact=-0.288  move=+1  (sampled)
+t= 2  x=4  p=0.281  proposed=24  accepted= 6  nu_hat=-0.603  nu_exact=-0.330  move=-1  (sampled)
+t= 3  x=3  p=0.188  proposed=24  accepted= 3  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t= 4  x=4  p=0.312  proposed=24  accepted= 5  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t= 5  x=5  p=0.156  proposed=24  accepted= 1  nu_hat=+1.000  nu_exact=-0.961  move=+1  (sampled)
+t= 6  x=6  p=0.062  proposed=24  accepted= 1  nu_hat=-1.000  nu_exact=-1.000  move=-1  (sampled)
+t= 7  x=5  p=0.094  proposed=24  accepted= 0  nu_hat=  n/a   nu_exact=-1.000  move=-1  (stored plan)
+t= 8  x=4  p=0.188  proposed=24  accepted= 3  nu_hat=-1.000  nu_exact=-1.000  move=-1  (sampled)
+t= 9  x=3  p=0.312  proposed=24  accepted= 8  nu_hat=-1.000  nu_exact=-1.000  move=-1  (sampled)
+t=10  x=2  p=0.156  proposed=24  accepted= 5  nu_hat=+0.242  nu_exact=+0.217  move=+1  (sampled)
+t=11  x=3  p=0.250  proposed=24  accepted= 6  nu_hat=+0.472  nu_exact=-0.288  move=+1  (sampled)
+t=12  x=4  p=0.281  proposed=24  accepted= 4  nu_hat=-0.288  nu_exact=-0.330  move=-1  (sampled)
+t=13  x=3  p=0.188  proposed=24  accepted= 6  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t=14  x=4  p=0.312  proposed=24  accepted= 8  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t=15  x=5  p=0.594  proposed=24  accepted=15  nu_hat=-0.908  nu_exact=-0.950  move=-1  (sampled)
+t=16  x=4  p=0.719  proposed=24  accepted=18  nu_hat=-0.786  nu_exact=-0.872  move=-1  (sampled)
+t=17  x=3  p=0.719  proposed=24  accepted=15  nu_hat=-0.633  nu_exact=-0.641  move=-1  (sampled)
+--> episode completed, cost 15.5, 432 rollout evaluations
+
+=== quantum sampler (quantum, depth 1, ideal), budget 24 rollouts per step ===
+t= 0  x=2  p=0.156  proposed= 8  accepted= 6  nu_hat=+0.232  nu_exact=+0.217  move=+1  (sampled)
+t= 1  x=3  p=0.250  proposed= 8  accepted= 8  nu_hat=-0.070  nu_exact=-0.288  move=-1  (sampled)
+t= 2  x=2  p=0.094  proposed= 8  accepted= 5  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t= 3  x=3  p=0.188  proposed= 8  accepted= 7  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t= 4  x=4  p=0.312  proposed= 8  accepted= 8  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t= 5  x=5  p=0.156  proposed= 8  accepted= 7  nu_hat=-0.865  nu_exact=-0.961  move=-1  (sampled)
+t= 6  x=4  p=0.250  proposed= 8  accepted= 8  nu_hat=-0.591  nu_exact=-0.892  move=-1  (sampled)
+t= 7  x=3  p=0.281  proposed= 8  accepted= 8  nu_hat=-0.891  nu_exact=-0.689  move=-1  (sampled)
+t= 8  x=2  p=0.375  proposed= 8  accepted= 7  nu_hat=+0.058  nu_exact=+0.000  move=+1  (sampled)
+t= 9  x=3  p=0.312  proposed= 8  accepted= 8  nu_hat=-1.000  nu_exact=-1.000  move=-1  (sampled)
+t=10  x=2  p=0.156  proposed= 8  accepted= 6  nu_hat=-0.689  nu_exact=+0.217  move=-1  (sampled)
+t=11  x=1  p=0.062  proposed= 8  accepted= 5  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t=12  x=2  p=0.094  proposed= 8  accepted= 5  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t=13  x=3  p=0.188  proposed= 8  accepted= 8  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t=14  x=4  p=0.312  proposed= 8  accepted= 8  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
+t=15  x=5  p=0.594  proposed= 8  accepted= 1  nu_hat=-1.000  nu_exact=-0.950  move=-1  (sampled)
+t=16  x=4  p=0.719  proposed= 8  accepted= 0  nu_hat=  n/a   nu_exact=-0.872  move=-1  (stored plan)
+t=17  x=3  p=0.719  proposed= 8  accepted= 0  nu_hat=  n/a   nu_exact=-0.641  move=-1  (stored plan)
+--> episode completed, cost 10.5, 432 rollout evaluations
+
+Saved results/closed_loop_episode.json
+Saved figures/closed_loop.png and figures/episode_storyboard.png
