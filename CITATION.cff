@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this code, please cite the paper below."
-title: "quantum-mppi-demo: MPPI control with a simulated quantum sampler"
+title: "quantum_mppi_demo: MPPI control with a simulated quantum sampler"
 authors:
   - family-names: Das
     given-names: Goutam

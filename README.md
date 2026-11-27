@@ -85,8 +85,8 @@ control step. The pictures are the actual amplitudes of the 32 plans, read from 
 ## Quick start
 
 ```bash
-git clone https://github.com/das-goutam/quantum-mppi-demo.git
-cd quantum-mppi-demo
+git clone https://github.com/das-goutam/quantum_mppi_demo.git
+cd quantum_mppi_demo
 pip install -r requirements.txt
 
 python examples/01_show_circuit.py     # the circuit and its gate counts          (seconds)
@@ -217,10 +217,27 @@ A gain above 1 means that the noisy circuit still saves rollout evaluations agai
 Depth 1 stays ahead up to a gate error of about 0.005. Depth 2 has twice as many gates and is never better
 than depth 1 on this problem.
 
+## On IBM Quantum hardware
+
+The sampler was also run on `ibm_kingston` (156 qubits), in three jobs with 523,968 shots.
+Scripts are in [`hardware/`](hardware/README.md) and the raw counts in `results/hardware/`.
+
+![Device results](figures/hardware.png)
+
+| Finding | Numbers |
+|---|---|
+| Small circuits save rollouts | four circuits in both scans, gains 1.02 to 1.43 |
+| The standard five-step circuits do not | gains 0.60 and 0.75 (scan A), 0.56 and 0.59 (scan B), at 309 and 327 two-qubit gates |
+| Accepted samples are near uniform | total variation distance at most 0.036, uniformity rejected for 4 of 9 circuits per scan |
+| Controller replay with device samples | 17.4% violations against 11.4% classical at six rollouts per step, equal from 18 |
+
+The device does not yet help the five-step controller, and no computational advantage is shown.
+The analysis of the stored counts runs without an IBM account: `python hardware/run_study.py report`.
+
 ## Repository map
 
 ```
-quantum-mppi-demo/
+quantum_mppi_demo/
 ├── README.md               this page
 ├── tutorial.ipynb          the whole method as an executed notebook
 ├── docs/how_it_works.md    the reasoning behind every step
@@ -231,9 +248,10 @@ quantum-mppi-demo/
 │   ├── mppi.py             MPPI update from verified samples, receding-horizon loop
 │   └── plotting.py         shared figure style
 ├── examples/               the five steps
-├── results/                console output and data of every step
+├── results/                console output and data of every step, results/hardware has the device counts
 ├── figures/                all pictures on this page
 ├── video/                  the explainer video and the script that renders it
+├── hardware/               runs on IBM Quantum hardware: scripts and how to repeat them
 ├── tests/                  the circuit checked against the classical model
 └── run_all.py              regenerate results/ and figures/
 ```
@@ -246,7 +264,7 @@ and the gate error, and `CorridorTask(...)` sets the obstacles, the horizon, the
 | | |
 |---|---|
 | **It is** | a complete, checkable demonstration of the mechanism: circuit construction, amplification, verification, MPPI update, closed loop, noise |
-| **It is not** | a hardware experiment. Everything runs on a simulator |
+| **It is not** | a real-time hardware experiment. The five steps run on a simulator. The device runs in `hardware/` are single circuits and a classical replay of the controller with stored device samples |
 | **It is not** | a claim of quantum advantage. Cost is counted in rollout evaluations, and a reversible rollout on a quantum device costs far more elementary operations than a classical one |
 | **It is not** | a hard instance. With 32 plans per step the exact update is computed by enumeration in `PlanningProblem.exact_update` |
 

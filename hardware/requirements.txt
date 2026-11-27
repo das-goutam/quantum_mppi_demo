@@ -1,0 +1,3 @@
+# only needed to submit jobs to IBM Quantum or to compile for a simulated IBM device
+# the stored results in results/hardware can be analysed without it
+qiskit-ibm-runtime>=0.40

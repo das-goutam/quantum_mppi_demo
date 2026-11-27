@@ -23,3 +23,7 @@ samplers.<name>.failed_se              its standard error
 samplers.<name>.steps_without_sample   fraction of control steps in which no proposal passed the check
 samplers.<name>.mean_cost              mean cost of the episodes without violation
 ```
+
+## hardware/
+
+Raw counts and analysis of the runs on `ibm_kingston`. See `hardware/README.md`.

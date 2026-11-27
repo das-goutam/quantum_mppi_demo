@@ -1,0 +1,442 @@
+{
+ "backend": "ibm_kingston",
+ "submitted": "2026-11-27T00:51:22",
+ "shots": 4000,
+ "masks": 8,
+ "dd": false,
+ "plan": [
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 745
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 21,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 5,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 12,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 3,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 18,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 11,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 1,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "A5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 14,
+   "shots": 500,
+   "two_qubit_gates": 309,
+   "depth": 746
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k0",
+   "k": 0,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 0,
+   "depth": 4
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1",
+   "k": 1,
+   "mask": 0,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 875
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 17,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 30,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 5,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 9,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 29,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 3,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 22,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  },
+  {
+   "inst": "C5",
+   "config": "k1_twirl",
+   "k": 1,
+   "mask": 23,
+   "shots": 500,
+   "two_qubit_gates": 322,
+   "depth": 876
+  }
+ ],
+ "job_id": "dc4hkmdhdvas73bppe1g"
+}
