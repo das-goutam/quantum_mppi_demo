@@ -3,7 +3,7 @@
 <p align="center">
   <b>End-to-end model predictive path integral control in which a 12-qubit circuit proposes the trajectories<br>
   and a classical rollout verifies every one of them.</b><br>
-  Simulated gate by gate with Qiskit Aer, with and without gate noise.
+  Simulated gate by gate with Qiskit Aer, with and without gate noise, and run on IBM Quantum hardware.
 </p>
 
 <p align="center">
@@ -14,6 +14,7 @@
   <a href="tutorial.ipynb"><b>Tutorial notebook</b></a> ·
   <a href="docs/how_it_works.md"><b>How it works</b></a> ·
   <a href="results/"><b>Results</b></a> ·
+  <a href="hardware/README.md"><b>Hardware runs</b></a> ·
   <a href="video/quantum_mppi_corridor.mp4"><b>Full video (76 s)</b></a>
 </p>
 
@@ -231,7 +232,42 @@ Scripts are in [`hardware/`](hardware/README.md) and the raw counts in `results/
 | Accepted samples are near uniform | total variation distance at most 0.036, uniformity rejected for 4 of 9 circuits per scan |
 | Controller replay with device samples | 17.4% violations against 11.4% classical at six rollouts per step, equal from 18 |
 
-The controller was replayed with samples measured on the device. It does not yet beat classical sampling for the five-step horizon, and no computational advantage is shown. The stored counts can be re-analysed without an IBM account: python hardware/run_study.py report.
+The controller was replayed with samples measured on the device. It does not yet beat classical sampling
+for the five-step horizon, and no computational advantage is shown. The stored counts can be re-analysed
+without an IBM account: `python hardware/run_study.py report`.
+
+### How the hardware experiment works
+
+```mermaid
+flowchart TD
+    A["Planning problems<br/>start position and allowed cells per time step"] --> B["Build the circuit<br/>standard or reduced, k Grover iterations"]
+    B --> C["Check on an ideal simulator<br/>output must equal the ideal amplified distribution"]
+    C --> D["Compile for ibm_kingston<br/>optimization level 3, best of 8 seeds"]
+    D --> E["Submit one job to the device<br/>with readout masks"]
+    E --> F["Raw counts<br/>stored in results/hardware"]
+    F --> G["Undo the masks and run the classical rollout<br/>on every measured bit string"]
+    G --> H["Accepted samples<br/>plans that avoid walls and obstacles"]
+
+    H --> I["Single circuits (scan A, scan B)"]
+    I --> I1["Acceptance and gain over classical sampling"]
+    I --> I2["Uniformity of the accepted samples"]
+    I --> I3["MPPI update against the exact value"]
+
+    H --> J["Controller replay"]
+    J --> J1["One pool of device shots per planning problem"]
+    J1 --> J2["At each control step take the next unused shots<br/>for the current state and time"]
+    J2 --> J3["MPPI update from the accepted plans, apply the first move"]
+    J3 -->|"next step, 18 steps per episode"| J2
+    J3 --> J4["Constraint violations over 500 episodes per budget<br/>compared with classical sampling and a fitted model"]
+```
+
+* **On the device.** Only the step "Submit one job to the device" uses the quantum processor. Each job runs
+  many circuits and returns the measured bit strings.
+* **On a classical computer.** Everything else: building and compiling the circuits, checking every measured
+  bit string with the rollout, the analysis, and the controller loop.
+* **Controller replay.** The shots for all 28 planning problems of the task were measured first, in one job.
+  The 18-step loop then ran classically and consumed those stored shots, each at most once per run. The
+  processor was not queried during the loop, so this is not a real-time experiment.
 
 ## Repository map
 
