@@ -191,11 +191,15 @@ Of the 28 planning problems, 24 have feasible plans. Their reduced circuits use 
 
 The processor is not queried during the controller replay. The experiment therefore evaluates control decisions based on stored device samples, without measuring live controller latency. Hardware samples perform worse than classical sampling at the smallest budget. The differences decrease at larger budgets, but the recorded rates are not identical from 18 rollouts onward.
 
-The counts can be analysed without an IBM account:
+The counts can be analysed without an IBM account. The `report` command recomputes the analysis, rewrites the selected JSON files, and regenerates their figures. Run it on copies to preserve the committed results used in the papers:
 
 ```bash
-python hardware/run_study.py report
+report_dir=$(mktemp -d)
+cp results/hardware/scan_*.json results/hardware/loop_*.json "$report_dir/"
+python hardware/run_study.py report "$report_dir"/*.json
 ```
+
+The recomputed files and figures are saved in the temporary directory. The analysis uses fixed random seeds, so repeated runs with the same inputs, code, and numerical environment should be reproducible. Resampling-based statistics can differ from the archived values when the code or environment changes.
 
 ## Scope and limitations
 
