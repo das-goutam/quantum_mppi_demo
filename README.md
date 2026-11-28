@@ -1,318 +1,236 @@
-<h1 align="center">MPPI with a quantum sampler</h1>
+# MPPI with a quantum sampler
+
+This repository implements constrained model predictive path integral (MPPI) control with a quantum trajectory sampler. A quantum circuit increases the probability of sampling a feasible input sequence. A classical rollout checks each measured sequence before it contributes to the weighted control update.
+
+The implementation includes Qiskit Aer simulations, IBM Quantum circuit measurements, and a classical controller replay using stored hardware samples. The five-step corridor example has 32 candidate sequences and uses a 12-qubit standard circuit. Its small size allows comparison with the exact control update.
 
 <p align="center">
-  <b>End-to-end model predictive path integral control in which a 12-qubit circuit proposes the trajectories<br>
-  and a classical rollout verifies every one of them.</b><br>
-  Simulated gate by gate with Qiskit Aer, with and without gate noise, and run on IBM Quantum hardware.
+  <img src="figures/demo.gif" width="840" alt="Quantum sampling, classical verification, and an MPPI control episode">
 </p>
 
-<p align="center">
-  <img src="figures/demo.gif" width="840" alt="One control step and a full episode of the quantum-sampled MPPI loop">
-</p>
+[Tutorial notebook](tutorial.ipynb) · [Method](docs/how_it_works.md) · [Results](results/) · [Hardware experiments](hardware/README.md) · [Video](video/quantum_mppi_corridor.mp4)
 
-<p align="center">
-  <a href="tutorial.ipynb"><b>Tutorial notebook</b></a> ·
-  <a href="docs/how_it_works.md"><b>How it works</b></a> ·
-  <a href="results/"><b>Results</b></a> ·
-  <a href="hardware/README.md"><b>Hardware runs</b></a> ·
-  <a href="video/quantum_mppi_corridor.mp4"><b>Full video (76 s)</b></a>
-</p>
+## Method
 
----
+MPPI estimates a control update from sampled input sequences, with lower-cost trajectories receiving larger weights. Hard constraints exclude infeasible trajectories. When feasible sequences are rare, a limited sampling budget can leave the controller without a usable plan.
 
-## In one minute
+The quantum sampler uses amplitude amplification, implemented through Grover iterations, to increase the probability of measuring a feasible sequence. Each iteration evaluates feasibility coherently within the circuit. After measurement, the classical model checks the sequence again and rejects it if any constraint is violated.
 
-* **The problem.** MPPI control draws random plans and averages the good ones. With hard constraints most
-  plans are infeasible and are thrown away. With a tight budget the controller is often left with no
-  usable plan at all.
-* **The idea.** Let a quantum circuit *propose* the plans. A few Grover iterations make the feasible plans
-  far more likely to be measured. A classical rollout then *verifies* each measured plan, and the usual
-  MPPI average is formed from the verified ones.
-* **The safeguard.** The device never decides feasibility. A faulty shot wastes budget, and it cannot put
-  an unsafe plan into the average.
-
-The task is small on purpose: 32 candidate plans per step, 12 qubits, an exact answer available by
-enumeration. Every step can be read, run and checked in minutes.
-
-## Results at a glance
-
-Fraction of episodes in which a constraint is violated, in percent. Every sampler gets the same number of
-rollout evaluations per control step. 300 episodes per entry.
-
-| Sampler | 6 rollouts | 9 rollouts | 12 rollouts | 18 rollouts | 24 rollouts |
-|---|---:|---:|---:|---:|---:|
-| **classical sampling** | 12.3 | 4.3 | 3.3 | 0.3 | 0.0 |
-| quantum, ideal device | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| **quantum, gate error 0.001** | 0.3 | 0.0 | 0.0 | 0.0 | 0.0 |
-| quantum, gate error 0.005 | 7.0 | 2.0 | 0.7 | 0.3 | 0.0 |
-| adaptive, ideal device | 1.3 | 0.0 | 0.0 | 0.0 | 0.0 |
-| adaptive, gate error 0.001 | 3.3 | 0.0 | 0.0 | 0.0 | 0.0 |
-
-<p align="center"><img src="figures/benchmark.png" width="860" alt="Benchmark"></p>
-
-* **Tight budget:** the amplified sampler fails far less often. Where feasible plans are rare, it almost
-  always finds one.
-* **Generous budget:** no sampler fails. The fixed-depth quantum sampler then has a slightly higher cost
-  than classical sampling (12.5 against 11.4 at 24 rollouts), and the adaptive sampler matches it (11.4).
-* **Blind spot:** where feasible plans are common, one Grover iteration overshoots. This is the flat blue
-  curve in the right panel. The stored plan covers these steps, and the adaptive sampler removes them.
-* **Gate noise** reduces the benefit. At a gate error of 0.005 the depth-1 circuit is close to break-even.
-
-The standard error of the largest entries is about 1.9 percentage points.
-
-## How one control step works
+Classical verification prevents infeasible model trajectories from entering the weighted average. It does not remove noise-induced bias among accepted samples or establish safety over the full control episode.
 
 ```mermaid
-flowchart LR
-    S(["state x, time t"]) --> C
-    subgraph Q["Quantum device (simulated)"]
-        direction LR
-        C["Superpose<br/>all 32 plans"] --> A["Mark and amplify<br/>the feasible plans"] --> M["Measure<br/>one plan per shot"]
-    end
-    subgraph K["Classical computer"]
-        direction LR
-        V{"Classical rollout:<br/>feasible?"} -- yes --> W["Weight<br/>exp(-cost/λ)"] --> U["MPPI update<br/>pick the move"]
-        V -- no --> X["discard"]
-    end
-    M --> V
-    U --> N(["apply the move"])
+flowchart TD
+    A["Current state and prediction horizon"] --> B["Prepare candidate sequences"]
+    B --> C["Evaluate feasibility and amplify"]
+    C --> D["Measure a sequence"]
+    D --> E{"Classical rollout feasible?"}
+    E -- Yes --> F["Compute cost and weight"]
+    E -- No --> G["Discard sequence"]
+    F --> H["Form update from accepted samples"]
+    H --> I["Apply one move and replan"]
 ```
 
-<p align="center"><img src="figures/amplification.png" width="900" alt="Amplitudes after each stage"></p>
+For accepted sequences indexed by $i$, the estimated first-step update is
 
-One Grover iteration takes the probability of measuring a feasible plan from 16 % to 88 % at the first
-control step. The pictures are the actual amplitudes of the 32 plans, read from the simulator.
+$$
+\widehat\nu=\frac{\sum_i w_i u_{i,0}}{\sum_i w_i},
+\qquad w_i=\exp(-S_i/\lambda).
+$$
 
-## Quick start
+Here, $u_{i,0}\in\{-1,+1\}$ is the first move, $S_i$ is the trajectory cost, and $\lambda>0$ controls the relative weights. The corridor controller executes the sign of this estimate and stores a compatible accepted plan. If the estimate is zero, it uses the cheapest accepted plan. If no sample is accepted, it follows its stored plan. If no stored move remains, it chooses a random move.
+
+The adaptive sampler first tries three classical proposals. If all fail, it uses the remaining budget for one-iteration quantum proposals.
+
+## Installation and examples
+
+Use Python 3.10 or newer. The recorded environment uses Qiskit 2.6.2 and Qiskit Aer 0.18.4.
 
 ```bash
 git clone https://github.com/das-goutam/quantum_mppi_demo.git
 cd quantum_mppi_demo
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
-python examples/01_show_circuit.py     # the circuit and its gate counts          (seconds)
-python examples/02_single_update.py    # one MPPI update from quantum shots       (30 s)
-python examples/03_closed_loop.py      # one episode, printed step by step        (10 s)
-python examples/04_benchmark.py        # violation rate against budget            (15 min, --quick: 2 min)
-python examples/05_noise_study.py      # how much gate noise the sampler takes    (2 min)
-
-pytest                                 # the circuit against the classical model  (seconds)
-python run_all.py                      # all of the above, output into results/
+python examples/01_show_circuit.py
+python examples/02_single_update.py
+python examples/03_closed_loop.py
+python examples/04_benchmark.py --quick
+python examples/05_noise_study.py
+python -m pytest
 ```
 
-Times are for a two-core laptop. Python 3.10 or newer. Tested with Qiskit 2.6.2 and Qiskit Aer 0.18.4.
+Run `examples/04_benchmark.py` without `--quick` for the full benchmark. Run `python run_all.py` to regenerate the simulation results and figures. Execution time depends on the computer and simulator settings.
 
-Prefer to read along? Open [`tutorial.ipynb`](tutorial.ipynb). It is stored with its outputs, so GitHub
-shows every figure without running anything.
+The [tutorial notebook](tutorial.ipynb) includes saved outputs. The [method notes](docs/how_it_works.md) provide the derivation and implementation details.
 
-## Step by step
+## Simulation experiments
 
-### Step 1. The circuit
+### 1. Circuit construction
 
-`examples/01_show_circuit.py` builds the circuit of the first planning problem.
+`examples/01_show_circuit.py` builds the first planning problem, with five moves and 32 possible input sequences.
 
-| Register | Qubits | Content |
-|---|---|---|
-| plan `z` | 5 | one qubit per move, 1 = up, 0 = down |
-| position `y` | 2 | the position, stored as ⌊x/2⌋ |
-| flags `f` | 5 | flag *t* is set if the position is unsafe after move *t* |
+| Register | Qubits | Representation |
+|---|---:|---|
+| Sequence `z` | 5 | One bit per move, with 1 for up and 0 for down |
+| Position `y` | 2 | Position stored as $\lfloor x/2\rfloor$ |
+| Violation flags `f` | 5 | One flag per prediction step |
 
-The reversible rollout below does on qubits what the model does on numbers. A plan is feasible exactly
-when all flags stay zero.
+The reversible rollout records constraint violations. A sequence is feasible when all flags are zero. The circuit then reverses the rollout to clear the work registers before completing the amplification step.
 
-<p align="center"><img src="figures/rollout_circuit.png" width="900" alt="Reversible rollout circuit"></p>
+<p align="center"><img src="figures/rollout_circuit.png" width="900" alt="Reversible rollout and constraint flags"></p>
 
-One shot at depth 1 (one Grover iteration) compiles to **160 CNOT gates** and 222 single-qubit gates.
+In the reported simulator compilation, a one-iteration circuit has 160 CNOT gates and 222 single-qubit gates. Hardware compilation produces different counts because it uses the processor's native gates and connectivity.
 
-### Step 2. One MPPI update
+The code parameter `depth` denotes the number of Grover iterations. It is distinct from the compiled circuit depth, which counts sequential gate layers.
 
-`examples/02_single_update.py` checks the circuit against the theory, takes shots, verifies them, and
-forms one update.
+### 2. Sampling and the control update
 
-```
-Probability that a shot returns a feasible plan
-  depth   theory sin^2((2k+1) theta)   statevector of the circuit
-  0       0.156250                     0.156250
-  1       0.881348                     0.881348
-  2       0.802040                     0.802040
+`examples/02_single_update.py` compares the circuit with the ideal amplification formula and estimates one control update from measured samples.
 
-2000 shots at depth 1, each one verified by a classical rollout
-  device              accepted   counts on the 5 feasible plans (uniform is expected)
-  ideal device        0.877      [349, 367, 331, 363, 344]
-  gate error 0.001    0.758      [290, 311, 323, 315, 277]
-  gate error 0.005    0.469      [182, 197, 202, 183, 173]
+At the initial state, five of the 32 sequences are feasible. If $p$ is the feasible fraction and $k$ is the number of Grover iterations, the ideal acceptance probability is
 
-MPPI update with a budget of 12 rollout evaluations, 500 repetitions
-  sampler                          no feasible sample   mean |nu_hat - nu|
-  classical                         13.4 %              0.758
-  quantum, depth 1, ideal            0.0 %              0.628
-  quantum, depth 1, eta = 0.001      0.2 %              0.644
-  quantum, depth 1, eta = 0.005      7.4 %              0.768
-```
+$$
+q_k=\sin^2\!\left((2k+1)\arcsin\sqrt{p}\right).
+$$
 
-<p align="center"><img src="figures/shots.png" width="640" alt="Measured plans"></p>
+| Grover iterations $k$ | Ideal formula | Circuit statevector |
+|---:|---:|---:|
+| 0 | 0.156250 | 0.156250 |
+| 1 | 0.881348 | 0.881348 |
+| 2 | 0.802040 | 0.802040 |
 
-The verified shots are spread evenly over the five feasible plans, also with gate noise. Noise shows up as
-a lower acceptance, not as a distorted sample.
+One iteration raises acceptance from 15.6% to 88.1%. A second iteration reduces it for this instance.
 
-### Step 3. One episode
+<p align="center"><img src="figures/amplification.png" width="900" alt="Simulated amplitudes of the 32 candidate sequences"></p>
 
-`examples/03_closed_loop.py` runs the loop for 18 steps and prints every step.
+The following results use 2,000 shots per setting. A shot is one circuit execution and measurement.
 
-```
-=== quantum sampler (quantum, depth 1, ideal), budget 24 rollouts per step ===
-t= 0  x=2  p=0.156  proposed= 8  accepted= 6  nu_hat=+0.232  nu_exact=+0.217  move=+1  (sampled)
-t= 1  x=3  p=0.250  proposed= 8  accepted= 8  nu_hat=-0.070  nu_exact=-0.288  move=-1  (sampled)
-t= 2  x=2  p=0.094  proposed= 8  accepted= 5  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
-t= 3  x=3  p=0.188  proposed= 8  accepted= 7  nu_hat=+1.000  nu_exact=+1.000  move=+1  (sampled)
-...
-t=15  x=5  p=0.594  proposed= 8  accepted= 1  nu_hat=-1.000  nu_exact=-0.950  move=-1  (sampled)
-t=16  x=4  p=0.719  proposed= 8  accepted= 0  nu_hat=  n/a   nu_exact=-0.872  move=-1  (stored plan)
-t=17  x=3  p=0.719  proposed= 8  accepted= 0  nu_hat=  n/a   nu_exact=-0.641  move=-1  (stored plan)
---> episode completed, cost 10.5, 432 rollout evaluations
-```
+| Simulator setting | Accepted fraction | Counts on the five feasible sequences |
+|---|---:|---|
+| Ideal | 0.877 | 349, 367, 331, 363, 344 |
+| Gate-noise parameter 0.001 | 0.758 | 290, 311, 323, 315, 277 |
+| Gate-noise parameter 0.005 | 0.469 | 182, 197, 202, 183, 173 |
 
-`p` is the fraction of feasible plans, `proposed` the number of shots, `accepted` the number that passed the
-classical check, `nu_hat` the estimated update and `nu_exact` the exact one.
+<p align="center"><img src="figures/shots.png" width="640" alt="Accepted sequence counts under ideal and noisy simulation"></p>
 
-<p align="center"><img src="figures/episode_storyboard.png" width="900" alt="Six control steps of one episode"></p>
+Ideal amplification preserves uniform sampling among feasible sequences. The simulated noisy counts are close to uniform, but finite samples do not establish exact uniformity. The theoretical uniformity result assumes global depolarizing noise. Local gate noise and hardware errors can change the relative frequencies of accepted sequences.
 
-The last panel shows a real limitation. When most plans are feasible, one Grover iteration overshoots and
-no shot passes, so the controller follows its stored verified plan. The adaptive sampler avoids this
-([details](docs/how_it_works.md#11-when-amplification-overshoots)).
+### 3. Receding-horizon control
 
-### Step 4. Many episodes
+`examples/03_closed_loop.py` runs an 18-step episode with a five-step prediction horizon. At each step, it samples candidate sequences, verifies them, computes the update, and applies one move.
 
-`examples/04_benchmark.py` produces the table at the top. It also records how many control steps end
-without any verified plan. At 6 rollouts per step:
+The printed output records the feasible fraction `p`, proposed and accepted sample counts, the estimated update `nu_hat`, the exact update `nu_exact`, and whether the move came from new samples or a stored plan.
 
-| Sampler | Steps without a verified plan (%) | Episodes with a violation (%) |
-|---|---:|---:|
-| classical sampling | 22.6 | 12.3 |
-| quantum, ideal device | 14.5 | 0.0 |
-| quantum, gate error 0.001 | 14.1 | 0.3 |
-| quantum, gate error 0.005 | 25.4 | 7.0 |
-| adaptive, ideal device | 6.2 | 1.3 |
-| adaptive, gate error 0.001 | 10.0 | 3.3 |
+<p align="center"><img src="figures/episode_storyboard.png" width="900" alt="Six planning steps from a simulated control episode"></p>
 
-The adaptive sampler has the fewest empty steps. The fixed-depth sampler has more of them than its
-violation rate suggests, because most fall in the easy last steps of the episode, where the stored plan is enough.
+When feasible sequences are common, a fixed Grover iteration can reduce acceptance. This occurs near the end of the example episode, where the controller sometimes relies on its stored plan. The adaptive sampler reduces this effect by trying classical proposals first, but it does not eliminate the possibility of an empty sample set.
 
-### Step 5. Gate noise
+### 4. Closed-loop benchmark
 
-`examples/05_noise_study.py` measures what a verified sample costs as the device gets noisier.
+`examples/04_benchmark.py` compares constraint violations at equal rollout budgets. A classical proposal costs one rollout. A quantum proposal with $k$ iterations is charged $2k+1$ rollout evaluations, accounting for the forward and inverse quantum rollouts and the classical verification. This accounting compares model queries, not elapsed runtime or elementary gate operations.
 
-<p align="center"><img src="figures/noise_study.png" width="860" alt="Noise study"></p>
+The table gives the percentage of episodes with at least one constraint violation. Each entry uses 300 episodes from [`results/benchmark.json`](results/benchmark.json).
 
-| Gate error | Acceptance, depth 1 | Gain, depth 1 | Acceptance, depth 2 | Gain, depth 2 |
-|---|---:|---:|---:|---:|
-| 0 (ideal) | 0.876 | 1.87 | 0.808 | 1.03 |
+| Sampler | 6 rollouts | 9 rollouts | 12 rollouts | 18 rollouts | 24 rollouts |
+|---|---:|---:|---:|---:|---:|
+| Classical | 12.3 | 4.3 | 3.3 | 0.3 | 0.0 |
+| Quantum, ideal | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| Quantum, noise parameter 0.001 | 0.3 | 0.0 | 0.0 | 0.0 | 0.0 |
+| Quantum, noise parameter 0.005 | 7.0 | 2.0 | 0.7 | 0.3 | 0.0 |
+| Adaptive, ideal | 1.3 | 0.0 | 0.0 | 0.0 | 0.0 |
+| Adaptive, noise parameter 0.001 | 3.3 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+<p align="center"><img src="figures/benchmark.png" width="860" alt="Constraint violations and control costs across rollout budgets"></p>
+
+At six rollouts per step, the one-iteration sampler reduces the observed violation rate from 12.3% to 0.3% at noise parameter 0.001. The standard error of the classical rate is about 1.9 percentage points. At 24 rollouts, no violations were observed for any sampler. Zero observed violations do not imply zero failure probability.
+
+Fewer violations do not necessarily imply a lower trajectory cost. At 24 rollouts, the ideal one-iteration sampler has mean cost 12.5, compared with 11.4 for classical sampling and 11.4 for the ideal adaptive sampler, rounded to one decimal place.
+
+### 5. Noise and rollout cost
+
+`examples/05_noise_study.py` measures acceptance and rollout cost for the initial planning problem, using 3,000 shots per setting.
+
+The simulation applies depolarizing noise with parameter `eta` after each CNOT gate and `eta/10` after each single-qubit gate. Each measured bit is also flipped with probability `eta`. These parameters specify the simulation model, rather than measured device error rates.
+
+<p align="center"><img src="figures/noise_study.png" width="860" alt="Acceptance and rollout-count gain as simulated noise increases"></p>
+
+| Noise parameter | Acceptance, $k=1$ | Gain, $k=1$ | Acceptance, $k=2$ | Gain, $k=2$ |
+|---:|---:|---:|---:|---:|
+| 0 | 0.876 | 1.87 | 0.808 | 1.03 |
 | 0.0005 | 0.816 | 1.74 | 0.741 | 0.95 |
 | 0.001 | 0.759 | 1.62 | 0.664 | 0.85 |
 | 0.002 | 0.669 | 1.43 | 0.561 | 0.72 |
 | 0.005 | 0.474 | 1.01 | 0.363 | 0.47 |
 | 0.01 | 0.294 | 0.63 | 0.226 | 0.29 |
-| classical sampling | 0.156 | 1.00 | | |
 
-A gain above 1 means that the noisy circuit still saves rollout evaluations against classical sampling.
-Depth 1 stays ahead up to a gate error of about 0.005. Depth 2 has twice as many gates and is never better
-than depth 1 on this problem.
+Rollout-count gain is the classical expected cost per accepted sequence divided by the quantum expected cost. Its estimate is $\widehat q_k/[(2k+1)p]$, where $\widehat q_k$ is the measured accepted fraction. A value above one indicates fewer counted rollouts per accepted sequence.
 
-## On IBM Quantum hardware
+The one-iteration estimate is close to break-even at noise parameter 0.005 and below one at 0.01. Two iterations give lower gain than one at every tested noise level. These comparisons apply to this problem and noise model.
 
-The sampler was also run on `ibm_kingston` (156 qubits), in three jobs with 523,968 shots.
-Scripts are in [`hardware/`](hardware/README.md) and the raw counts in `results/hardware/`.
+## IBM Quantum experiments
 
-![Device results](figures/hardware.png)
+Three jobs on `ibm_kingston` contain 523,968 shots across two circuit scans and one collection of controller samples. The scan circuits use 5 to 12 qubits. Scripts and instructions are in [`hardware/`](hardware/README.md), and raw counts are in [`results/hardware/`](results/hardware/).
 
-| Finding | Numbers |
+![Circuit measurements and controller replay](figures/hardware.png)
+
+| Measurement | Result |
 |---|---|
-| Small circuits save rollouts | four circuits in both scans, gains 1.02 to 1.43 |
-| The standard five-step circuits do not | gains 0.60 and 0.75 (scan A), 0.56 and 0.59 (scan B), at 309 and 327 two-qubit gates |
-| Accepted samples are near uniform | total variation distance at most 0.036, uniformity rejected for 4 of 9 circuits per scan |
-| Controller replay with device samples | 17.4% violations against 11.4% classical at six rollouts per step, equal from 18 |
+| Small-circuit rollout gain | Four circuits exceed unit gain by more than three nominal standard errors in both scans. Their measured gains range from 1.02 to 1.43. |
+| Standard five-step circuits | Gains are 0.60 and 0.75 in scan A, and 0.56 and 0.59 in scan B. The circuits use 309 and 327 two-qubit gates. |
+| Accepted distributions | The largest empirical total variation distance from uniform is 0.036. Small deviations can still be statistically significant. |
+| Controller replay at six rollouts per step | The one-iteration hardware sampler has 17.4% violations, compared with 11.4% for classical sampling, over 500 episodes per entry. |
 
-The controller was replayed with samples measured on the device. It does not yet beat classical sampling
-for the five-step horizon, and no computational advantage is shown. The stored counts can be re-analysed
-without an IBM account: `python hardware/run_study.py report`.
+Total variation distance measures the difference between probability distributions. The reported value is computed from the accepted-sample histogram, so it is an empirical estimate. The nominal standard errors used for circuit gains do not correct for testing multiple circuits.
 
-### How the hardware experiment works
+### Controller replay procedure
 
-```mermaid
-flowchart LR
-    subgraph P["1 Prepare (classical)"]
-        direction TB
-        A["Build the circuit of<br/>each planning problem"] --> B["Compile for<br/>ibm_kingston"]
-    end
-    subgraph Q["2 Measure (IBM device)"]
-        C["Run one job,<br/>store the bit strings"]
-    end
-    subgraph K["3 Use the samples (classical)"]
-        direction TB
-        V{"Rollout:<br/>feasible?"} -- yes --> H["Accepted<br/>samples"]
-        V -- no --> X["discard"]
-        H --> I["Single circuits:<br/>gain, uniformity"]
-        H --> J["Controller replay:<br/>18-step MPPI loop"]
-    end
-    B --> C --> V
+1. Construct and compile circuits for 28 state–time planning problems.
+2. Measure the circuits on the processor and store a separate sample pool for each problem.
+3. Run the 18-step controller classically, drawing from the pool for the current planning problem.
+4. Verify each sequence and compute the control update from accepted samples.
+
+Of the 28 planning problems, 24 have feasible plans. Their reduced circuits use 154 to 217 two-qubit gates. Each stored shot is used at most once within a sampler–budget entry. Pools are reset across entries, so the comparisons reuse hardware data.
+
+The processor is not queried during the controller replay. The experiment therefore evaluates control decisions based on stored device samples, without measuring live controller latency. Hardware samples perform worse than classical sampling at the smallest budget. The differences decrease at larger budgets, but the recorded rates are not identical from 18 rollouts onward.
+
+The counts can be analysed without an IBM account:
+
+```bash
+python hardware/run_study.py report
 ```
 
-* **On the device.** Only stage 2 uses the quantum processor. Each job runs many circuits and returns the
-  measured bit strings.
-* **On a classical computer.** Everything else: building and compiling the circuits, checking every measured
-  bit string with the rollout, the analysis, and the controller loop.
-* **Controller replay.** The shots for all 28 planning problems of the task were measured first, in one job.
-  The 18-step loop then ran classically and consumed those stored shots, each at most once per run. The
-  processor was not queried during the loop, so this is not a real-time experiment.
+## Scope and limitations
 
-## Repository map
+The examples demonstrate circuit construction, feasibility amplification, classical verification, and the resulting control update. The reported gains concern rollout counts. Quantum gate cost, compilation, device access, and execution time must also be considered when assessing computational performance.
 
-```
-quantum_mppi_demo/
-├── README.md               this page
-├── tutorial.ipynb          the whole method as an executed notebook
-├── docs/how_it_works.md    the reasoning behind every step
-├── qmppi/                  the package
-│   ├── corridor.py         task and classical model, PlanningProblem.rollout is the verification
-│   ├── circuits.py         reversible rollout, phase oracle, reflection, complete shot
-│   ├── samplers.py         classical, quantum (Qiskit Aer, optional noise) and adaptive samplers
-│   ├── mppi.py             MPPI update from verified samples, receding-horizon loop
-│   └── plotting.py         shared figure style
-├── examples/               the five steps
-├── results/                console output and data of every step, results/hardware has the device counts
-├── figures/                all pictures on this page
-├── video/                  the explainer video and the script that renders it
-├── hardware/               runs on IBM Quantum hardware: scripts and how to repeat them
-├── tests/                  the circuit checked against the classical model
-└── run_all.py              regenerate results/ and figures/
-```
+The corridor is small enough to solve exactly by enumeration through `PlanningProblem.exact_update`. These experiments do not establish an advantage over the best classical solution method.
 
-Two knobs cover most experiments: `QuantumSampler(depth=..., eta=...)` sets the number of Grover iterations
-and the gate error, and `CorridorTask(...)` sets the obstacles, the horizon, the cost and the temperature.
+Verification applies to the stated model and prediction horizon. The controller has no recursive-feasibility guarantee, and the experiments measure how often constraint violations occur. Noise can also bias the accepted distribution and the weighted update even when every accepted trajectory is feasible.
 
-## What this is and what it is not
+## Repository contents
 
-| | |
+| Path | Contents |
 |---|---|
-| **It is** | a complete, checkable demonstration of the mechanism: circuit construction, amplification, verification, MPPI update, closed loop, noise |
-| **It is not** | a real-time hardware experiment. The five steps run on a simulator. The device runs in `hardware/` are single circuits and a classical replay of the controller with stored device samples |
-| **It is not** | a claim of quantum advantage. Cost is counted in rollout evaluations, and a reversible rollout on a quantum device costs far more elementary operations than a classical one |
-| **It is not** | a hard instance. With 32 plans per step the exact update is computed by enumeration in `PlanningProblem.exact_update` |
+| `tutorial.ipynb` | Tutorial with saved outputs |
+| `docs/how_it_works.md` | Derivation and implementation details |
+| `qmppi/corridor.py` | Task, classical rollout, and exact update |
+| `qmppi/circuits.py` | Reversible rollout, phase oracle, and amplification circuit |
+| `qmppi/samplers.py` | Classical, quantum, and adaptive samplers |
+| `qmppi/mppi.py` | Weighted update and receding-horizon controller |
+| `qmppi/plotting.py` | Plotting functions |
+| `examples/` | Five simulation experiments |
+| `results/` | Stored simulation results and hardware counts |
+| `figures/` | Figures used in this README |
+| `hardware/` | IBM experiment and analysis scripts |
+| `tests/` | Circuit checks against the classical model |
+| `video/` | Demonstration video and rendering script |
+| `run_all.py` | Simulation and figure generation |
 
-Implementation notes
-
-* The noise model is depolarizing noise after every compiled gate (parameter `eta` on CNOT gates, `eta/10`
-  on single-qubit gates) and a flip with probability `eta` on every measured bit.
-* The simulator is asked for shots in batches. Unused shots of a circuit are kept and handed out later, and
-  every shot is used at most once.
-* The loop has no recursive-feasibility guarantee. Failures are possible, and the benchmark measures how
-  often they occur.
+`QuantumSampler(depth=..., eta=...)` sets the number of Grover iterations and the simulation noise parameter. `CorridorTask(...)` sets the obstacles, prediction horizon, cost, and temperature. Simulator shots are generated in batches and retained for later use, with each shot consumed at most once within a run.
 
 ## Reference
 
-This repository accompanies the line of work that started with
+The earlier quantum-query formulation is described in:
 
-> G. Das and T. Tanaka, "Model Predictive Path Integral Control as a Quantum Query Problem,"
-> *IEEE Control Systems Letters*, 2026. [arXiv:2607.28851](https://arxiv.org/abs/2607.28851)
+> G. Das and T. Tanaka, “Model Predictive Path Integral Control as a Quantum Query Problem,” *IEEE Control Systems Letters*, 2026. [arXiv:2607.28851](https://arxiv.org/abs/2607.28851)
 
-See [`CITATION.cff`](CITATION.cff).
+The present implementation uses amplitude amplification to generate samples, followed by a classical weighted update. See [`CITATION.cff`](CITATION.cff) for citation metadata.
