@@ -19,16 +19,15 @@ The quantum sampler uses amplitude amplification, implemented through Grover ite
 Classical verification prevents infeasible model trajectories from entering the weighted average. It does not remove noise-induced bias among accepted samples or establish safety over the full control episode.
 
 ```mermaid
-flowchart TD
-    A["Current state and prediction horizon"] --> B["Prepare candidate sequences"]
-    B --> C["Evaluate feasibility and amplify"]
-    C --> D["Measure a sequence"]
-    D --> E{"Classical rollout feasible?"}
-    E -- Yes --> F["Compute cost and weight"]
-    E -- No --> G["Discard sequence"]
-    F --> H["Form update from accepted samples"]
-    H --> I["Apply one move and replan"]
+flowchart LR
+    Q["Quantum sampler"] --> V{"Classical check"}
+    V -- Feasible --> W["Weighted samples"]
+    V -- Infeasible --> D["Discard"]
+    W -- Budget exhausted --> U["MPPI update"]
+    U -- Apply move and replan --> Q
 ```
+
+Sampling and verification repeat within the rollout budget. The controller then forms one update from the accepted samples and applies one move. If no sample is accepted, it uses the fallback described below.
 
 For accepted sequences indexed by $i$, the estimated first-step update is
 
