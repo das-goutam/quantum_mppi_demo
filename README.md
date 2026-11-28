@@ -231,8 +231,7 @@ Scripts are in [`hardware/`](hardware/README.md) and the raw counts in `results/
 | Accepted samples are near uniform | total variation distance at most 0.036, uniformity rejected for 4 of 9 circuits per scan |
 | Controller replay with device samples | 17.4% violations against 11.4% classical at six rollouts per step, equal from 18 |
 
-The device does not yet help the five-step controller, and no computational advantage is shown.
-The analysis of the stored counts runs without an IBM account: `python hardware/run_study.py report`.
+The controller was replayed with samples measured on the device. It does not yet beat classical sampling for the five-step horizon, and no computational advantage is shown. The stored counts can be re-analysed without an IBM account: python hardware/run_study.py report.
 
 ## Repository map
 
