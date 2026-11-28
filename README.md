@@ -239,30 +239,26 @@ without an IBM account: `python hardware/run_study.py report`.
 ### How the hardware experiment works
 
 ```mermaid
-flowchart TD
-    A["Planning problems<br/>start position and allowed cells per time step"] --> B["Build the circuit<br/>standard or reduced, k Grover iterations"]
-    B --> C["Check on an ideal simulator<br/>output must equal the ideal amplified distribution"]
-    C --> D["Compile for ibm_kingston<br/>optimization level 3, best of 8 seeds"]
-    D --> E["Submit one job to the device<br/>with readout masks"]
-    E --> F["Raw counts<br/>stored in results/hardware"]
-    F --> G["Undo the masks and run the classical rollout<br/>on every measured bit string"]
-    G --> H["Accepted samples<br/>plans that avoid walls and obstacles"]
-
-    H --> I["Single circuits (scan A, scan B)"]
-    I --> I1["Acceptance and gain over classical sampling"]
-    I --> I2["Uniformity of the accepted samples"]
-    I --> I3["MPPI update against the exact value"]
-
-    H --> J["Controller replay"]
-    J --> J1["One pool of device shots per planning problem"]
-    J1 --> J2["At each control step take the next unused shots<br/>for the current state and time"]
-    J2 --> J3["MPPI update from the accepted plans, apply the first move"]
-    J3 -->|"next step, 18 steps per episode"| J2
-    J3 --> J4["Constraint violations over 500 episodes per budget<br/>compared with classical sampling and a fitted model"]
+flowchart LR
+    subgraph P["1 Prepare (classical)"]
+        direction TB
+        A["Build the circuit of<br/>each planning problem"] --> B["Compile for<br/>ibm_kingston"]
+    end
+    subgraph Q["2 Measure (IBM device)"]
+        C["Run one job,<br/>store the bit strings"]
+    end
+    subgraph K["3 Use the samples (classical)"]
+        direction TB
+        V{"Rollout:<br/>feasible?"} -- yes --> H["Accepted<br/>samples"]
+        V -- no --> X["discard"]
+        H --> I["Single circuits:<br/>gain, uniformity"]
+        H --> J["Controller replay:<br/>18-step MPPI loop"]
+    end
+    B --> C --> V
 ```
 
-* **On the device.** Only the step "Submit one job to the device" uses the quantum processor. Each job runs
-  many circuits and returns the measured bit strings.
+* **On the device.** Only stage 2 uses the quantum processor. Each job runs many circuits and returns the
+  measured bit strings.
 * **On a classical computer.** Everything else: building and compiling the circuits, checking every measured
   bit string with the rollout, the analysis, and the controller loop.
 * **Controller replay.** The shots for all 28 planning problems of the task were measured first, in one job.
